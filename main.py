@@ -13,6 +13,7 @@
 
 
 from google.cloud import storage
+
 import os
 
 # [START functions_copier]
@@ -52,9 +53,13 @@ def copier(data, context):
     output_bucket = storage_client.get_bucket(output_bucket_name)
 
     input_blob = input_bucket.get_blob(data['name'])
-    blob_string=input_blob.download_as_string()
-    output_blob = output_bucket.blob(output_blob_path)
-    output_blob.upload_from_string(blob_string)
+    if input_blob:
+        output_blob = output_bucket.blob(output_blob_path)
+        token = None
+        while True:
+            token, bytes_rewritten, total_bytes = output_blob.rewrite(
+                input_blob, token=token)
+            if token is None:
+                break
 
-
-# [END functions_mover]
+# [END functions_copier]
